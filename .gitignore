@@ -39,3 +39,97 @@ yarn-error.*
 # generated native folders
 /ios
 /android
+
+# ─────────────────────────────────────────
+# NODE
+# ─────────────────────────────────────────
+
+# This folder contains all your installed packages (node_modules).
+# It can be hundreds of megabytes and is NEVER pushed to GitHub.
+# Anyone who clones your repo just runs 'npm install' to recreate it.
+node_modules/
+
+# npm's debug log — only useful locally when something goes wrong
+npm-debug.log*
+
+# yarn's equivalent debug logs (in case you ever switch to yarn)
+yarn-debug.log*
+yarn-error.log*
+
+# ─────────────────────────────────────────
+# EXPO
+# ─────────────────────────────────────────
+
+# Expo's local build cache — generated automatically, not needed in Git
+.expo/
+
+# The dist folder is created when you build the app for production.
+# It's generated output, not source code.
+dist/
+
+# Web build output
+web-build/
+
+# ─────────────────────────────────────────
+# ENVIRONMENT VARIABLES
+# ─────────────────────────────────────────
+
+# .env files store secret keys and config (API keys, passwords, etc.)
+# These must NEVER go to GitHub — even in a private repo, it's bad practice.
+.env
+.env.local
+.env.development
+.env.production
+.env*.local
+
+# ─────────────────────────────────────────
+# OPERATING SYSTEM FILES
+# ─────────────────────────────────────────
+
+# macOS creates this hidden file in every folder it touches.
+# It stores folder display preferences — useless to anyone else.
+.DS_Store
+
+# Windows equivalent — thumbnail cache file
+Thumbs.db
+
+# Windows folder settings file
+Desktop.ini
+
+# ─────────────────────────────────────────
+# TYPESCRIPT
+# ─────────────────────────────────────────
+
+# TypeScript compiles your .ts/.tsx files into JavaScript.
+# The compiled output goes here — we don't push compiled output,
+# only source code. The compiler regenerates this from your source.
+build/
+*.tsbuildinfo
+
+# ─────────────────────────────────────────
+# EDITOR / IDE
+# ─────────────────────────────────────────
+
+# VSCode stores your personal editor settings here.
+# Things like your colour theme and window layout shouldn't be shared.
+.vscode/
+
+# JetBrains IDEs (WebStorm, IntelliJ) store project settings here
+.idea/
+
+# ─────────────────────────────────────────
+# TESTING
+# ─────────────────────────────────────────
+
+# Code coverage reports — generated when you run tests
+coverage/
+
+# ─────────────────────────────────────────
+# NATIVE BUILD FOLDERS (if you ever eject from Expo)
+# ─────────────────────────────────────────
+
+# If you ever eject from Expo managed workflow, these folders get created.
+# They contain native Android/iOS code that's auto-generated.
+# They're large and can be regenerated, so we exclude them.
+android/
+ios/
