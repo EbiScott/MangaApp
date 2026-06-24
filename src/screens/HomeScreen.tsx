@@ -1,76 +1,136 @@
 // src/screens/HomeScreen.tsx
-import { View, Text, StyleSheet, ScrollView, ActivityIndicator } from 'react-native';
-import { useEffect, useState } from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  ScrollView,
+  ActivityIndicator,
+  useWindowDimensions,
+} from 'react-native';
+import { useNavigation } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { useQuery } from '@tanstack/react-query';
+import { FlashList } from '@shopify/flash-list';
 import { sourceRegistry } from '../services/sources';
 import { Manga } from '../types';
+import MangaCard from '../components/MangaCard';
+import { RootStackParamList } from '../navigation/types';
 
-export default function HomeScreen() {
-  // useState stores data that can change over time.
-  // When it changes, React re-renders the component automatically.
-  const [manga, setManga] = useState<Manga[]>([]);   // List of manga
-  const [loading, setLoading] = useState(true);       // Are we fetching?
-  const [error, setError] = useState<string | null>(null); // Any errors?
+type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
-  // useEffect runs code AFTER the component renders.
-  // The empty [] at the end means "only run this once, on first load".
-  useEffect(() => {
-    async function loadManga() {
-      try {
-        const source = sourceRegistry.getSource('mangadex');
-        if (!source) throw new Error('MangaDex source not found');
+// Each card takes 38% of screen width, but we add a small
+// right margin so there's breathing room between cards.
+const HORIZONTAL_CARD_RATIO = 0.38;
+const CARD_HORIZONTAL_GAP = 8;
 
-        const results = await source.getPopular(1);
-        setManga(results);
-      } catch (err) {
-        setError('Failed to load manga. Check your internet connection.');
-        console.error(err);
-      } finally {
-        // 'finally' runs whether the try succeeded or the catch ran
-        setLoading(false);
-      }
-    }
+function MangaRow({ title, sourceId, type }: {
+  title: string;
+  sourceId: string;
+  type: 'popular' | 'latest';
+}) {
+  const navigation = useNavigation<NavigationProp>();
+  const source = sourceRegistry.getSource(sourceId);
 
-    loadManga();
-  }, []);
+  // Get live screen width and cap it for web
+  const { width: rawWidth } = useWindowDimensions();
+  const screenWidth = Math.min(rawWidth, 768);
 
-  if (loading) {
-    return (
-      <View style={styles.container}>
-        <ActivityIndicator size="large" color="#ff6b35" />
-        <Text style={styles.loadingText}>Loading manga...</Text>
-      </View>
-    );
-  }
+  // Each card in the horizontal row takes up 38% of the screen width.
+  // This means you can see about 2.5 cards at a time, which hints
+  // that the row is scrollable without cutting off cards awkwardly.
+  const cardWidth = screenWidth * HORIZONTAL_CARD_RATIO;
 
-  if (error) {
-    return (
-      <View style={styles.container}>
-        <Text style={styles.errorText}>{error}</Text>
-      </View>
-    );
-  }
+  const { data, isLoading, error } = useQuery({
+    queryKey: ['home', sourceId, type],
+    queryFn: () => {
+      if (!source) throw new Error('Source not found');
+      return type === 'popular' ? source.getPopular(1) : source.getLatest(1);
+    },
+    enabled: !!source,
+  });
 
   return (
-    <ScrollView style={styles.scroll} contentContainerStyle={styles.content}>
-      <Text style={styles.heading}>Popular on MangaDex</Text>
-      {manga.map(item => (
-        <View key={item.id} style={styles.item}>
-          <Text style={styles.title}>{item.title}</Text>
-          <Text style={styles.genres}>{item.genres.join(', ')}</Text>
-        </View>
-      ))}
+    <View style={rowStyles.section}>
+      <Text style={rowStyles.sectionTitle}>{title}</Text>
+
+      {isLoading ? (
+        <ActivityIndicator size="small" color="#ff6b35" style={rowStyles.loader} />
+      ) : error ? (
+        // Show a subtle error state instead of crashing the whole screen
+        <Text style={rowStyles.errorText}>Failed to load</Text>
+      ) : (
+        <FlashList
+          data={data ?? []}
+          horizontal
+          keyExtractor={item => item.id}
+          renderItem={({ item }: { item: Manga }) => (
+          // This wrapper View adds the gap to the right of every card
+          <View style={{ marginRight: CARD_HORIZONTAL_GAP }}>
+            <MangaCard
+              manga={item}
+              cardWidth={cardWidth}
+              onPress={() =>
+                navigation.navigate('MangaDetail', {
+                  mangaId: item.id,
+                  sourceId: item.sourceId,
+                })
+              }
+            />
+          </View>
+        )}
+          estimatedItemSize={cardWidth}
+          contentContainerStyle={rowStyles.listContent}
+          showsHorizontalScrollIndicator={false}
+        />
+      )}
+    </View>
+  );
+}
+
+export default function HomeScreen() {
+  return (
+    <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
+      <Text style={styles.header}>MangaApp</Text>
+      <MangaRow title="🔥 Popular" sourceId="mangadex" type="popular" />
+      <MangaRow title="🕐 Latest Updates" sourceId="mangadex" type="latest" />
     </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#0f0f0f', alignItems: 'center', justifyContent: 'center' },
-  scroll: { flex: 1, backgroundColor: '#0f0f0f' },
-  content: { padding: 16 },
-  heading: { fontSize: 20, fontWeight: 'bold', color: '#fff', marginBottom: 16 },
-  item: { backgroundColor: '#1a1a1a', padding: 12, borderRadius: 8, marginBottom: 8 },
-  title: { color: '#fff', fontWeight: '600', fontSize: 15 },
-  genres: { color: '#888', fontSize: 12, marginTop: 4 },
-  loadingText: { color: '#888', marginTop: 12 },
-  errorText: { color: '#ff4444', textAlign: 'center', padding: 20 },
+  container: {
+    flex: 1,
+    backgroundColor: '#0f0f0f',
+  },
+  header: {
+    fontSize: 28,
+    fontWeight: '800',
+    color: '#ffffff',
+    padding: 16,
+    paddingTop: 20,
+  },
+});
+
+const rowStyles = StyleSheet.create({
+  section: {
+    marginBottom: 24,
+  },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#ffffff',
+    paddingHorizontal: 16,
+    marginBottom: 12,
+  },
+  loader: {
+    marginVertical: 20,
+  },
+  listContent: {
+    paddingHorizontal: 8,
+  },
+  errorText: {
+    color: '#888',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+  },
 });

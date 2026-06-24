@@ -3,6 +3,8 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { Ionicons } from '@expo/vector-icons';
+import SourceListScreen from '../screens/SourceListScreen';
+import SourceBrowseScreen from '../screens/SourceBrowseScreen';
 
 // Import all our screens
 import HomeScreen from '../screens/HomeScreen';
@@ -49,7 +51,23 @@ function BrowseStack() {
         contentStyle: { backgroundColor: '#0f0f0f' },
       }}
     >
-      <Stack.Screen name="Browse" component={BrowseScreen} />
+      {/* SourceListScreen is the new entry point for Browse */}
+      <Stack.Screen
+        name="Browse"
+        component={SourceListScreen}
+        options={{ title: 'Sources' }}
+      />
+
+      {/* Tapping a source goes here */}
+      <Stack.Screen
+        name="SourceBrowse"
+        component={SourceBrowseScreen}
+        // The title is set dynamically from params
+        options={({ route }) => ({
+          title: (route.params as { sourceId: string }).sourceId,
+        })}
+      />
+
       <Stack.Screen name="MangaDetail" component={MangaDetailScreen} />
       <Stack.Screen name="Reader" component={ReaderScreen} />
     </Stack.Navigator>
