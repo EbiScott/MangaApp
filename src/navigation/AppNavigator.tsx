@@ -35,7 +35,14 @@ function HomeStack() {
       }}
     >
       <Stack.Screen name="Home" component={HomeScreen} />
-      <Stack.Screen name="MangaDetail" component={MangaDetailScreen} />
+      <Stack.Screen
+        name="MangaDetail"
+        component={MangaDetailScreen}
+        options={{
+          // Hide the navigation header — our hero image IS the header
+          headerShown: false,
+        }}
+      />      
       <Stack.Screen name="Reader" component={ReaderScreen} />
     </Stack.Navigator>
   );
@@ -68,8 +75,15 @@ function BrowseStack() {
         })}
       />
 
-      <Stack.Screen name="MangaDetail" component={MangaDetailScreen} />
-      <Stack.Screen name="Reader" component={ReaderScreen} />
+    <Stack.Screen
+      name="MangaDetail"
+      component={MangaDetailScreen}
+      options={{
+        // Hide the navigation header — our hero image IS the header
+        headerShown: false,
+      }}
+    />      
+    <Stack.Screen name="Reader" component={ReaderScreen} />
     </Stack.Navigator>
   );
 }
@@ -85,7 +99,14 @@ function LibraryStack() {
       }}
     >
       <Stack.Screen name="Library" component={LibraryScreen} />
-      <Stack.Screen name="MangaDetail" component={MangaDetailScreen} />
+      <Stack.Screen
+        name="MangaDetail"
+        component={MangaDetailScreen}
+        options={{
+          // Hide the navigation header — our hero image IS the header
+          headerShown: false,
+        }}
+      />
       <Stack.Screen name="Reader" component={ReaderScreen} />
     </Stack.Navigator>
   );
